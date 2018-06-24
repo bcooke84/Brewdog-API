@@ -14,12 +14,18 @@ const makeRequest = function(url, callback) {
 const dropDownRequestComplete = function() {
   if (this.status !== 200) return;
   const beers = JSON.parse(this.response);
-  populateDropDown(beers);
+
+
+  const select = document.querySelector('#beer-drop-down');
+  populateDropDown(select, beers);
+
+  select.addEventListener("change", function(){
+    console.log("eventListener");
+    displayBeerDetails(select, beers);
+  })
 };
 
-const populateDropDown = function(beers) {
-  const select = document.querySelector('#beer-drop-down');
-
+const populateDropDown = function(select, beers) {
   beers.forEach(function(beer) {
     const option = document.createElement("option");
     option.text = beer.name;
@@ -28,43 +34,46 @@ const populateDropDown = function(beers) {
     appendOption(select, option);
   });
 
-  select.addEventListener("change", displayBeerDetails(beers))
-
+  showFirstBeer(beers);
 }
 
-const displayBeerDetails = function(beers) {
-  return function() {
-
-    const div = document.querySelector("#beer-details");
-    while (div.firstChild){
-      div.removeChild(div.firstChild);
-    }
-
-    const beerName = document.createElement("h2")
-    const beerImage = document.createElement("img")
-    const strength = document.createElement("p")
-    const description = document.createElement("p")
-    const foodPairing = document.createElement("p")
-
-    const selectedBeer = beers[this.value];
-console.log(selectedBeer);
-    beerName.textContent = selectedBeer.name;
-    beerImage.src = selectedBeer.image_url;
-    beerImage.width = "50";
-    beerImage.height = "200";
-    strength.textContent = selectedBeer.abv + "%";
-    description.textContent = selectedBeer.description;
-    foodPairing.textContent = selectedBeer.food_pairing;
-
-    appendBeerDetails(div, beerName, beerImage, strength, description, foodPairing)
-  }
+const showFirstBeer = function(beers) {
+  const div = document.querySelector("#beer-details");
+  const selectedBeer = beers[0];
+  createBeerTemplate(div, selectedBeer);
 }
 
-const appendOption= function(select, option) {
+const displayBeerDetails = function(select, beers) {
+  const div = document.querySelector("#beer-details");
+
+  clearBeerDetails(div);
+  console.log(select.value);
+  const selectedBeer = beers[select.value];
+  createBeerTemplate(div, selectedBeer);
+}
+
+const createBeerTemplate = function(div, selectedBeer){
+  const beerName = document.createElement("h2")
+  const beerImage = document.createElement("img")
+  const strength = document.createElement("p")
+  const description = document.createElement("p")
+  const foodPairing = document.createElement("p")
+
+  beerName.textContent = selectedBeer.name;
+  beerImage.src = selectedBeer.image_url;
+  beerImage.height = "200";
+  strength.textContent = selectedBeer.abv + "%";
+  description.textContent = selectedBeer.description;
+  foodPairing.textContent = selectedBeer.food_pairing;
+
+  appendBeerDetails(div, beerName, beerImage, strength, description, foodPairing)
+}
+
+const appendOption = function(select, option) {
   select.appendChild(option);
 }
 
-const appendBeerDetails= function(div, beerName, beerImage, strength, description, foodPairing) {
+const appendBeerDetails = function(div, beerName, beerImage, strength, description, foodPairing) {
   div.appendChild(beerName);
   div.appendChild(beerImage);
   div.appendChild(strength);
@@ -72,8 +81,11 @@ const appendBeerDetails= function(div, beerName, beerImage, strength, descriptio
   div.appendChild(foodPairing);
 }
 
-
-
+const clearBeerDetails = function(div) {
+  while (div.firstChild) {
+    div.removeChild(div.firstChild);
+  }
+}
 
 window.addEventListener('load', app);
 
